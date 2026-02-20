@@ -195,118 +195,27 @@ toplam_gelir = df_gelir['tutar'].sum() if not df_gelir.empty else 0
 toplam_gider = df_gider['tutar'].sum() if not df_gider.empty else 0
 net_durum = toplam_gelir - toplam_gider
 
-# --- NAVİGASYON (SESSION STATE) ---
+# --- NAVİGASYON ---
+# Sadece ilk açılışta varsayılan sayfa ata
 if "sayfa" not in st.session_state:
     st.session_state.sayfa = "ozet"
 
-# Sidebar (yedek olarak kalıyor)
-st.sidebar.title("🏦 Menü")
-st.sidebar.markdown("---")
-sidebar_secim = st.sidebar.radio("İşlemler", ["📊 Özet", "➕ Ekle", "📈 Analiz", "⚙️ Düzenle"])
-sidebar_map = {"📊 Özet": "ozet", "➕ Ekle": "ekle", "📈 Analiz": "analiz", "⚙️ Düzenle": "duzenle"}
-if sidebar_secim:
-    st.session_state.sayfa = sidebar_map[sidebar_secim]
-
 sayfa = st.session_state.sayfa
 
-# Alt navigasyon - Streamlit butonları ile
-st.markdown("<div style='height:70px'></div>", unsafe_allow_html=True)  # alt boşluk
-
-with st.container():
-    st.markdown("""
-    <style>
-    .nav-wrapper {
-        position: fixed;
-        bottom: 0; left: 0; right: 0;
-        background: #ffffff;
-        border-top: 1px solid #e2e8f0;
-        box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
-        z-index: 9999;
-        padding: 0;
-    }
-    .nav-wrapper .stHorizontalBlock {
-        gap: 0 !important;
-        padding: 0 !important;
-    }
-    div[data-testid="stBottomBlockContainer"] {
-        padding: 0 !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-# --- ALT NAVİGASYON BUTONLARI ---
-aktif = st.session_state.sayfa
-
-nav_items = [
-    ("ozet",    "📊", "Özet"),
-    ("ekle",    "➕", "Ekle"),
-    ("analiz",  "📈", "Analiz"),
-    ("duzenle", "⚙️", "Düzenle"),
-]
-
-# Aktif butona farklı stil için CSS
-aktif_styles = ""
-for i, (key, icon, label) in enumerate(nav_items):
-    if aktif == key:
-        aktif_styles += f"""
-        div[data-testid="stHorizontalBlock"] > div:nth-child({i+1}) .stButton > button {{
-            background: #f0f7ff !important;
-            color: #1a73e8 !important;
-            border-bottom: 3px solid #1a73e8 !important;
-        }}"""
-
-st.markdown(f"""
+# Sidebar - sadece göster, state'i EZMESİN
+st.sidebar.title("🏦 Menü")
+st.sidebar.markdown("---")
+st.sidebar.markdown(f"**Aktif sayfa:** {sayfa}")
+for lbl, key in [("📊 Finansal Özet","ozet"),("➕ Yeni İşlem Ekle","ekle"),("📈 Detaylı Analiz","analiz"),("⚙️ Düzenle / Sil","duzenle")]:
+    if st.sidebar.button(lbl, key=f"sb_{key}", use_container_width=True):
+        st.session_state.sayfa = key
+        st.rerun()
+# Alt navigasyon CSS
+st.markdown("""
 <style>
-/* Alt nav buton stili */
-div[data-testid="stHorizontalBlock"] .stButton > button {{
-    height: 64px !important;
-    border-radius: 0 !important;
-    border: none !important;
-    border-bottom: 3px solid transparent !important;
-    background: #ffffff !important;
-    color: #94a3b8 !important;
-    font-size: 12px !important;
-    font-weight: 600 !important;
-    box-shadow: none !important;
-    padding: 4px 2px !important;
-    min-height: unset !important;
-    line-height: 1.3 !important;
-    white-space: pre-line !important;
-}}
-div[data-testid="stHorizontalBlock"] .stButton > button:hover {{
-    transform: none !important;
-    box-shadow: none !important;
-    background: #f8fafc !important;
-}}
-/* Aktif sekme */
-{aktif_styles}
-
-/* Nav bar wrapper */
-div[data-testid="stHorizontalBlock"]:has(.stButton) {{
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    background: #ffffff !important;
-    border-top: 1px solid #e2e8f0 !important;
-    box-shadow: 0 -4px 16px rgba(0,0,0,0.08) !important;
-    z-index: 99999 !important;
-    gap: 0 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-}}
-.main .block-container {{
-    padding-bottom: 90px !important;
-}}
+.main .block-container { padding-bottom: 90px !important; }
 </style>
 """, unsafe_allow_html=True)
-
-cols = st.columns(4)
-for i, (key, icon, label) in enumerate(nav_items):
-    with cols[i]:
-        if st.button(f"{icon}\n{label}", key=f"nav_{key}", use_container_width=True):
-            st.session_state.sayfa = key
-            st.rerun()
 
 
 
@@ -505,3 +414,20 @@ elif sayfa == "duzenle":
             st.rerun()
     else:
         st.write("Kayıt yok.")
+
+# ===== ALT NAVİGASYON BARI (Her sayfada görünür) =====
+st.markdown("<hr style='margin-top:40px;border-color:#e2e8f0'>", unsafe_allow_html=True)
+st.markdown("**Sayfalar:**")
+nav_col1, nav_col2, nav_col3, nav_col4 = st.columns(4)
+with nav_col1:
+    if st.button("📊 Özet", key="bot_ozet", use_container_width=True):
+        st.session_state.sayfa = "ozet"; st.rerun()
+with nav_col2:
+    if st.button("➕ Ekle", key="bot_ekle", use_container_width=True):
+        st.session_state.sayfa = "ekle"; st.rerun()
+with nav_col3:
+    if st.button("📈 Analiz", key="bot_analiz", use_container_width=True):
+        st.session_state.sayfa = "analiz"; st.rerun()
+with nav_col4:
+    if st.button("⚙️ Düzenle", key="bot_duzenle", use_container_width=True):
+        st.session_state.sayfa = "duzenle"; st.rerun()
