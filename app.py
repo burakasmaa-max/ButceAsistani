@@ -195,31 +195,123 @@ toplam_gelir = df_gelir['tutar'].sum() if not df_gelir.empty else 0
 toplam_gider = df_gider['tutar'].sum() if not df_gider.empty else 0
 net_durum = toplam_gelir - toplam_gider
 
-# --- YAN MENÜ ---
+# --- NAVİGASYON (SESSION STATE) ---
+if "sayfa" not in st.session_state:
+    st.session_state.sayfa = "ozet"
+
+# Sidebar (yedek olarak kalıyor)
 st.sidebar.title("🏦 Menü")
 st.sidebar.markdown("---")
-sayfa = st.sidebar.radio("İşlemler", [
-    "📊 Finansal Özet",
-    "➕ Yeni İşlem Ekle",
-    "📈 Detaylı Analiz",
-    "⚙️ Kayıtları Düzenle / Sil"
-])
+sidebar_secim = st.sidebar.radio("İşlemler", ["📊 Özet", "➕ Ekle", "📈 Analiz", "⚙️ Düzenle"])
+sidebar_map = {"📊 Özet": "ozet", "➕ Ekle": "ekle", "📈 Analiz": "analiz", "⚙️ Düzenle": "duzenle"}
+if sidebar_secim:
+    st.session_state.sayfa = sidebar_map[sidebar_secim]
 
-# =============================================
-# MOBİL ALT NAVİGASYON BARI (Hızlı erişim)
-# =============================================
-st.markdown("""
-<div class="bottom-nav">
-    <a href="?sayfa=ozet"><span class="icon">📊</span>Özet</a>
-    <a href="?sayfa=ekle"><span class="icon">➕</span>Ekle</a>
-    <a href="?sayfa=analiz"><span class="icon">📈</span>Analiz</a>
-    <a href="?sayfa=duzenle"><span class="icon">⚙️</span>Düzenle</a>
-</div>
+sayfa = st.session_state.sayfa
+
+# Alt navigasyon - Streamlit butonları ile
+st.markdown("<div style='height:70px'></div>", unsafe_allow_html=True)  # alt boşluk
+
+with st.container():
+    st.markdown("""
+    <style>
+    .nav-wrapper {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        background: #ffffff;
+        border-top: 1px solid #e2e8f0;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+        z-index: 9999;
+        padding: 0;
+    }
+    .nav-wrapper .stHorizontalBlock {
+        gap: 0 !important;
+        padding: 0 !important;
+    }
+    div[data-testid="stBottomBlockContainer"] {
+        padding: 0 !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- ALT NAVİGASYON BUTONLARI ---
+aktif = st.session_state.sayfa
+
+nav_items = [
+    ("ozet",    "📊", "Özet"),
+    ("ekle",    "➕", "Ekle"),
+    ("analiz",  "📈", "Analiz"),
+    ("duzenle", "⚙️", "Düzenle"),
+]
+
+# Aktif butona farklı stil için CSS
+aktif_styles = ""
+for i, (key, icon, label) in enumerate(nav_items):
+    if aktif == key:
+        aktif_styles += f"""
+        div[data-testid="stHorizontalBlock"] > div:nth-child({i+1}) .stButton > button {{
+            background: #f0f7ff !important;
+            color: #1a73e8 !important;
+            border-bottom: 3px solid #1a73e8 !important;
+        }}"""
+
+st.markdown(f"""
+<style>
+/* Alt nav buton stili */
+div[data-testid="stHorizontalBlock"] .stButton > button {{
+    height: 64px !important;
+    border-radius: 0 !important;
+    border: none !important;
+    border-bottom: 3px solid transparent !important;
+    background: #ffffff !important;
+    color: #94a3b8 !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+    padding: 4px 2px !important;
+    min-height: unset !important;
+    line-height: 1.3 !important;
+    white-space: pre-line !important;
+}}
+div[data-testid="stHorizontalBlock"] .stButton > button:hover {{
+    transform: none !important;
+    box-shadow: none !important;
+    background: #f8fafc !important;
+}}
+/* Aktif sekme */
+{aktif_styles}
+
+/* Nav bar wrapper */
+div[data-testid="stHorizontalBlock"]:has(.stButton) {{
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: #ffffff !important;
+    border-top: 1px solid #e2e8f0 !important;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.08) !important;
+    z-index: 99999 !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}}
+.main .block-container {{
+    padding-bottom: 90px !important;
+}}
+</style>
 """, unsafe_allow_html=True)
+
+cols = st.columns(4)
+for i, (key, icon, label) in enumerate(nav_items):
+    with cols[i]:
+        if st.button(f"{icon}\n{label}", key=f"nav_{key}", use_container_width=True):
+            st.session_state.sayfa = key
+            st.rerun()
+
 
 
 # ================= 1. FİNANSAL ÖZET =================
-if sayfa == "📊 Finansal Özet":
+if sayfa == "ozet":
     st.title("💼 Finansal Durum")
 
     # Mobil: 3 kart dikey sıralanır, yan yana görünür
@@ -264,7 +356,7 @@ if sayfa == "📊 Finansal Özet":
 
 
 # ================= 2. YENİ İŞLEM EKLE =================
-elif sayfa == "➕ Yeni İşlem Ekle":
+elif sayfa == "ekle":
     st.title("➕ Yeni İşlem")
 
     # Mobilde tek sütun, tab ile ayır
@@ -321,7 +413,7 @@ elif sayfa == "➕ Yeni İşlem Ekle":
 
 
 # ================= 3. DETAYLI ANALİZ =================
-elif sayfa == "📈 Detaylı Analiz":
+elif sayfa == "analiz":
     st.title("📈 Harcama Analizi")
 
     if df_gider.empty:
@@ -386,7 +478,7 @@ elif sayfa == "📈 Detaylı Analiz":
 
 
 # ================= 4. DÜZENLE / SİL =================
-elif sayfa == "⚙️ Kayıtları Düzenle / Sil":
+elif sayfa == "duzenle":
     st.title("⚙️ Veri Yönetimi")
     st.info("Hücreye tıklayarak düzenleme yapabilir, satır seçip Delete ile silebilirsiniz. İşlem bitince Kaydet'e basın.")
 
