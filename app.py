@@ -16,44 +16,42 @@ st.set_page_config(
 # --- MOBİL-ÖNCELİKLİ CSS ---
 st.markdown("""
 <style>
-    /* Google Font */
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
 
     html, body, [class*="css"] {
         font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
-    /* Genel arka plan */
     .stApp {
-        background-color: #0f1117;
-        color: #e8eaf0;
+        background-color: #f5f7fa;
+        color: #1a1f2e;
     }
 
-    /* Başlıklar */
     h1, h2, h3, h4 {
-        color: #ffffff !important;
+        color: #1a1f2e !important;
         font-weight: 700 !important;
     }
 
     /* Metric kartları */
     div[data-testid="metric-container"] {
-        background: linear-gradient(135deg, #1e2130 0%, #252a3d 100%);
-        border: 1px solid #2e3450;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
         border-radius: 16px;
         padding: 16px !important;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        border-left: 5px solid #1a73e8;
     }
     div[data-testid="metric-container"] label {
-        color: #8892b0 !important;
+        color: #64748b !important;
         font-size: 13px !important;
     }
     div[data-testid="metric-container"] div[data-testid="stMetricValue"] {
-        color: #64ffda !important;
+        color: #1a73e8 !important;
         font-size: 22px !important;
         font-weight: 700 !important;
     }
 
-    /* Butonlar - büyük dokunma alanı (mobil için) */
+    /* Butonlar */
     .stButton > button {
         width: 100%;
         padding: 14px 20px !important;
@@ -64,45 +62,42 @@ st.markdown("""
         color: white !important;
         border: none !important;
         transition: all 0.2s ease !important;
-        min-height: 52px; /* Mobil dokunma standardı */
+        min-height: 52px;
     }
     .stButton > button:hover {
         transform: translateY(-1px) !important;
-        box-shadow: 0 6px 20px rgba(26,115,232,0.4) !important;
+        box-shadow: 0 6px 20px rgba(26,115,232,0.3) !important;
     }
     .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #64ffda, #00b4d8) !important;
-        color: #0f1117 !important;
+        background: linear-gradient(135deg, #1a73e8, #0d47a1) !important;
+        color: white !important;
     }
 
-    /* Form alanları - mobil uyumlu */
+    /* Form alanları */
     .stTextInput > div > div > input,
     .stNumberInput > div > div > input,
     .stSelectbox > div > div {
-        background-color: #1e2130 !important;
-        border: 1px solid #2e3450 !important;
+        background-color: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
         border-radius: 10px !important;
-        color: #e8eaf0 !important;
-        font-size: 16px !important; /* iOS zoom'u engellemek için min 16px */
+        color: #1a1f2e !important;
+        font-size: 16px !important;
         padding: 12px !important;
         min-height: 48px;
     }
 
     /* Sidebar */
     section[data-testid="stSidebar"] {
-        background-color: #1a1f2e !important;
-        border-right: 1px solid #2e3450;
-    }
-    section[data-testid="stSidebar"] .stRadio > label {
-        color: #8892b0 !important;
+        background-color: #ffffff !important;
+        border-right: 1px solid #e2e8f0;
     }
 
     /* Tab butonları */
     .stTabs [data-baseweb="tab"] {
-        background-color: #1e2130;
+        background-color: #e2e8f0;
         border-radius: 10px;
         padding: 10px 16px;
-        color: #8892b0;
+        color: #64748b;
         font-size: 14px;
     }
     .stTabs [aria-selected="true"] {
@@ -114,65 +109,48 @@ st.markdown("""
     .stDataFrame {
         border-radius: 12px;
         overflow: hidden;
-        border: 1px solid #2e3450;
+        border: 1px solid #e2e8f0;
     }
 
-    /* Bilgi/uyarı kutuları */
-    .stInfo, .stSuccess, .stWarning, .stError {
-        border-radius: 12px !important;
-        font-size: 14px !important;
-    }
-
-    /* Mobil: sütunları dikey sırala */
-    @media (max-width: 768px) {
-        /* Sütunlar zaten centered layoutta iyi görünür */
-        div[data-testid="metric-container"] div[data-testid="stMetricValue"] {
-            font-size: 18px !important;
-        }
-        .stTabs [data-baseweb="tab"] {
-            font-size: 12px !important;
-            padding: 8px 10px !important;
-        }
-    }
-
-    /* Ayırıcı çizgi */
-    hr {
-        border-color: #2e3450 !important;
-        margin: 20px 0 !important;
-    }
-
-    /* Alt navigasyon barı (mobil hızlı erişim) */
+    /* Alt navigasyon */
     .bottom-nav {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
-        background: #1a1f2e;
-        border-top: 1px solid #2e3450;
+        background: #ffffff;
+        border-top: 1px solid #e2e8f0;
         display: flex;
         justify-content: space-around;
         padding: 10px 0 16px 0;
         z-index: 999;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.06);
     }
     .bottom-nav a {
         text-decoration: none;
-        color: #8892b0;
+        color: #64748b;
         font-size: 11px;
         text-align: center;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 4px;
+        font-weight: 600;
     }
     .bottom-nav a span.icon {
         font-size: 22px;
     }
-    /* Ana içeriğe alt boşluk bırak (nav bar için) */
+
     .main .block-container {
         padding-bottom: 90px !important;
         padding-left: 16px !important;
         padding-right: 16px !important;
         max-width: 720px !important;
+    }
+
+    hr {
+        border-color: #e2e8f0 !important;
+        margin: 20px 0 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -266,16 +244,16 @@ if sayfa == "📊 Finansal Özet":
         )
         fig.update_traces(marker_color='#4a9eff', marker_line_width=0)
         fig.update_layout(
-            plot_bgcolor='#1a1f2e',
-            paper_bgcolor='#1a1f2e',
-            font_color='#e8eaf0',
-            title_font_color='#ffffff',
+            plot_bgcolor='#ffffff',
+            paper_bgcolor='#f5f7fa',
+            font_color='#1a1f2e',
+            title_font_color='#1a1f2e',
             height=280,
             margin=dict(l=0, r=10, t=40, b=0),
             showlegend=False,
         )
-        fig.update_xaxes(gridcolor='#2e3450', tickfont=dict(color='#8892b0'), color='#8892b0')
-        fig.update_yaxes(gridcolor='rgba(0,0,0,0)', tickfont=dict(color='#e8eaf0'), color='#e8eaf0')
+        fig.update_xaxes(gridcolor='#e2e8f0', tickfont=dict(color='#64748b'), color='#64748b')
+        fig.update_yaxes(gridcolor='rgba(0,0,0,0)', tickfont=dict(color='#1a1f2e'), color='#1a1f2e')
         st.plotly_chart(fig, use_container_width=True)
 
         st.subheader("Son 5 Harcama")
@@ -350,11 +328,11 @@ elif sayfa == "📈 Detaylı Analiz":
         st.warning("Analiz için önce gider verisi girmelisiniz.")
     else:
         LAYOUT = dict(
-            plot_bgcolor='#1a1f2e',
-            paper_bgcolor='#1a1f2e',
-            font_color='#e8eaf0',
+            plot_bgcolor='#ffffff',
+            paper_bgcolor='#f5f7fa',
+            font_color='#1a1f2e',
             margin=dict(l=0, r=0, t=40, b=60),
-            legend=dict(bgcolor='rgba(0,0,0,0)', font=dict(color='#e8eaf0'))
+            legend=dict(bgcolor='rgba(255,255,255,0.8)', font=dict(color='#1a1f2e'))
         )
 
         tab1, tab2, tab3 = st.tabs(["📅 Aylık", "📂 Kategori", "👤 Kişi"])
@@ -368,8 +346,8 @@ elif sayfa == "📈 Detaylı Analiz":
                          )
             fig.update_traces(marker_color='#4a9eff', marker_line_width=0)
             fig.update_layout(**LAYOUT, height=320, xaxis_tickangle=-45)
-            fig.update_xaxes(gridcolor='#2e3450')
-            fig.update_yaxes(gridcolor='#2e3450')
+            fig.update_xaxes(gridcolor='#e2e8f0')
+            fig.update_yaxes(gridcolor='#e2e8f0')
             st.plotly_chart(fig, use_container_width=True)
 
         with tab2:
@@ -393,7 +371,7 @@ elif sayfa == "📈 Detaylı Analiz":
                            )
             fig_k.update_traces(marker_color='#2ec4b6', marker_line_width=0)
             fig_k.update_layout(**LAYOUT, height=300)
-            fig_k.update_xaxes(gridcolor='#2e3450')
+            fig_k.update_xaxes(gridcolor='#e2e8f0')
             st.plotly_chart(fig_k, use_container_width=True)
 
             kisi_ay = df_gider.groupby(['Ay-Yıl', 'kisi', 'Yıl', 'Ay_No'])['tutar'].sum().reset_index()
@@ -402,8 +380,8 @@ elif sayfa == "📈 Detaylı Analiz":
                             markers=True, title="Aylık Kişi Trendi",
                             labels={'tutar': '₺', 'Ay-Yıl': ''})
             fig_l.update_layout(**LAYOUT, height=320, xaxis_tickangle=-45)
-            fig_l.update_xaxes(gridcolor='#2e3450')
-            fig_l.update_yaxes(gridcolor='#2e3450')
+            fig_l.update_xaxes(gridcolor='#e2e8f0')
+            fig_l.update_yaxes(gridcolor='#e2e8f0')
             st.plotly_chart(fig_l, use_container_width=True)
 
 
