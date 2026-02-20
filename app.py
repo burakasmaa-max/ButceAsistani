@@ -194,26 +194,24 @@ def veri_kaydet(data):
 
 app_data = veri_yukle()
 
-# --- DATAFRAME HAZIRLA (cache ile) ---
-@st.cache_data(ttl=5)
-def df_hazirla(data_json):
+# --- DATAFRAME HAZIRLA ---
+def df_hazirla(data):
     ay_isimleri = {1:"Ocak", 2:"Şubat", 3:"Mart", 4:"Nisan", 5:"Mayıs", 6:"Haziran",
                    7:"Temmuz", 8:"Ağustos", 9:"Eylül", 10:"Ekim", 11:"Kasım", 12:"Aralık"}
-    
-    df_g = pd.DataFrame(data_json.get("gelirler", []))
-    df_gi = pd.DataFrame(data_json.get("giderler", []))
-    
+
+    df_g = pd.DataFrame(data.get("gelirler", []))
+    df_gi = pd.DataFrame(data.get("giderler", []))
+
     if not df_gi.empty:
         df_gi['tarih_dt'] = pd.to_datetime(df_gi['tarih'], format='%d.%m.%Y', errors='coerce')
         df_gi['Yıl'] = df_gi['tarih_dt'].dt.year.fillna(datetime.now().year).astype(int)
         df_gi['Ay_No'] = df_gi['tarih_dt'].dt.month.fillna(datetime.now().month).astype(int)
         df_gi['Ay'] = df_gi['Ay_No'].map(ay_isimleri)
         df_gi['Ay-Yıl'] = df_gi['Ay'] + " " + df_gi['Yıl'].astype(str)
-    
+
     return df_g, df_gi
 
-# cache_data için JSON'u string'e çevir (hashable olması için)
-df_gelir, df_gider = df_hazirla(json.dumps(app_data, ensure_ascii=False))
+df_gelir, df_gider = df_hazirla(app_data)
 
 toplam_gelir = df_gelir['tutar'].sum() if not df_gelir.empty else 0
 toplam_gider = df_gider['tutar'].sum() if not df_gider.empty else 0
