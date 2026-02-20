@@ -263,19 +263,19 @@ if sayfa == "📊 Finansal Özet":
             kat_ozet, x='tutar', y='kategori', orientation='h',
             title="Top 5 Harcama Kategorisi",
             labels={'tutar': 'TL', 'kategori': ''},
-            color='tutar', color_continuous_scale='Blues'
         )
+        fig.update_traces(marker_color='#4a9eff', marker_line_width=0)
         fig.update_layout(
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='#1a1f2e',
+            paper_bgcolor='#1a1f2e',
             font_color='#e8eaf0',
+            title_font_color='#ffffff',
             height=280,
-            margin=dict(l=0, r=0, t=40, b=0),
+            margin=dict(l=0, r=10, t=40, b=0),
             showlegend=False,
-            coloraxis_showscale=False
         )
-        fig.update_xaxes(gridcolor='#2e3450')
-        fig.update_yaxes(gridcolor='rgba(0,0,0,0)')
+        fig.update_xaxes(gridcolor='#2e3450', tickfont=dict(color='#8892b0'), color='#8892b0')
+        fig.update_yaxes(gridcolor='rgba(0,0,0,0)', tickfont=dict(color='#e8eaf0'), color='#e8eaf0')
         st.plotly_chart(fig, use_container_width=True)
 
         st.subheader("Son 5 Harcama")
@@ -350,11 +350,11 @@ elif sayfa == "📈 Detaylı Analiz":
         st.warning("Analiz için önce gider verisi girmelisiniz.")
     else:
         LAYOUT = dict(
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='#1a1f2e',
+            paper_bgcolor='#1a1f2e',
             font_color='#e8eaf0',
             margin=dict(l=0, r=0, t=40, b=60),
-            legend=dict(bgcolor='rgba(0,0,0,0)')
+            legend=dict(bgcolor='rgba(0,0,0,0)', font=dict(color='#e8eaf0'))
         )
 
         tab1, tab2, tab3 = st.tabs(["📅 Aylık", "📂 Kategori", "👤 Kişi"])
@@ -365,8 +365,9 @@ elif sayfa == "📈 Detaylı Analiz":
             fig = px.bar(aylik, x='Ay-Yıl', y='tutar',
                          title="Aylık Harcama Trendi",
                          labels={'tutar': '₺', 'Ay-Yıl': ''},
-                         color='tutar', color_continuous_scale='Blues')
-            fig.update_layout(**LAYOUT, height=320, xaxis_tickangle=-45, coloraxis_showscale=False)
+                         )
+            fig.update_traces(marker_color='#4a9eff', marker_line_width=0)
+            fig.update_layout(**LAYOUT, height=320, xaxis_tickangle=-45)
             fig.update_xaxes(gridcolor='#2e3450')
             fig.update_yaxes(gridcolor='#2e3450')
             st.plotly_chart(fig, use_container_width=True)
@@ -389,8 +390,9 @@ elif sayfa == "📈 Detaylı Analiz":
             kisi = df_gider.groupby('kisi')['tutar'].sum().reset_index()
             fig_k = px.bar(kisi.sort_values('tutar'), x='tutar', y='kisi',
                            orientation='h', title="Kişi Bazlı Harcama",
-                           color='tutar', color_continuous_scale='Teal')
-            fig_k.update_layout(**LAYOUT, height=300, coloraxis_showscale=False)
+                           )
+            fig_k.update_traces(marker_color='#2ec4b6', marker_line_width=0)
+            fig_k.update_layout(**LAYOUT, height=300)
             fig_k.update_xaxes(gridcolor='#2e3450')
             st.plotly_chart(fig_k, use_container_width=True)
 
