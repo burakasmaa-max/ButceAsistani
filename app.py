@@ -619,7 +619,7 @@ elif sayfa == "ayarlar":
         else:
             st.info("Henüz kategori eklenmedi.")
 
-    # ── VERİLER ──
+# ── VERİLER ──
     with tab3:
         st.markdown("### 📉 Gider Kayıtları")
         if not df_gider.empty:
@@ -628,15 +628,25 @@ elif sayfa == "ayarlar":
                                       use_container_width=True, key="ed_gider", disabled=["id"])
             if st.button("💾  Giderleri Kaydet", type="primary", use_container_width=True):
                 try:
+                    # 1. Tutar veya tarih sütunu boş (NaN/None) olan satırları filtrele
+                    temiz_giderler = edited_g.dropna(subset=['tutar', 'tarih'])
+                    
                     supabase.table("giderler").delete().eq("user_id", user_id).execute()
-                    for _, row in edited_g.iterrows():
+                    
+                    for _, row in temiz_giderler.iterrows():
+                        # Açıklama boş bırakılmışsa hata vermemesi için boş string yap
+                        g_aciklama = "" if pd.isna(row['aciklama']) else str(row['aciklama'])
+                        
                         supabase.table("giderler").insert({
-                            "user_id": user_id, "tutar": row['tutar'], "kisi": row['kisi'],
-                            "kategori": row['kategori'], "aciklama": row['aciklama'], "tarih": row['tarih']
+                            "user_id": user_id, 
+                            "tutar": float(row['tutar']), 
+                            "kisi": str(row['kisi']),
+                            "kategori": str(row['kategori']), 
+                            "aciklama": g_aciklama, 
+                            "tarih": str(row['tarih'])
                         }).execute()
                         
                     st.cache_data.clear()
-                    
                     st.success("✅ Güncellendi!")
                     st.rerun()
                 except Exception as e:
@@ -652,15 +662,23 @@ elif sayfa == "ayarlar":
                                           use_container_width=True, key="ed_gelir", disabled=["id"])
             if st.button("💾  Gelirleri Kaydet", type="primary", use_container_width=True):
                 try:
+                    # 1. Tutar veya tarih sütunu boş (NaN/None) olan satırları filtrele
+                    temiz_gelirler = edited_gelir.dropna(subset=['tutar', 'tarih'])
+                    
                     supabase.table("gelirler").delete().eq("user_id", user_id).execute()
-                    for _, row in edited_gelir.iterrows():
+                    
+                    for _, row in temiz_gelirler.iterrows():
+                        # Açıklama boş bırakılmışsa hata vermemesi için boş string yap
+                        g_aciklama = "" if pd.isna(row['aciklama']) else str(row['aciklama'])
+                        
                         supabase.table("gelirler").insert({
-                            "user_id": user_id, "tutar": row['tutar'],
-                            "aciklama": row['aciklama'], "tarih": row['tarih']
+                            "user_id": user_id, 
+                            "tutar": float(row['tutar']),
+                            "aciklama": g_aciklama, 
+                            "tarih": str(row['tarih'])
                         }).execute()
                         
                     st.cache_data.clear()
-                    
                     st.success("✅ Güncellendi!")
                     st.rerun()
                 except Exception as e:
@@ -693,3 +711,4 @@ with bottom:
             if st.button(btn_label, key=f"nav_{key}", use_container_width=True):
                 st.session_state.sayfa = key
                 st.rerun()
+
