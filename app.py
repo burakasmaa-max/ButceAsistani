@@ -195,14 +195,20 @@ if st.session_state.user is None:
             if st.form_submit_button("Giriş Yap", use_container_width=True):
                 if email and sifre:
                     try:
+                        # Supabase'e giriş isteği atıyoruz
                         res = supabase.auth.sign_in_with_password({"email": email, "password": sifre})
+                        
+                        # Başarılı olursa session'a kaydedip sayfayı yeniliyoruz
                         st.session_state.user = res.user
                         st.session_state.access_token = res.session.access_token
+                        st.success("✅ Giriş başarılı, yönlendiriliyorsunuz...")
                         st.rerun()
-                    except:
-                        st.error("❌ E-posta veya şifre hatalı!")
+                        
+                    except Exception as e:
+                        # ARTIK SUPABASE'İN BİZE GÖNDERDİĞİ GERÇEK HATAYI GÖRECEĞİZ
+                        st.error(f"❌ Giriş Hatası: {str(e)}")
                 else:
-                    st.error("⚠️ Lütfen tüm alanları doldurun.")
+                    st.error("⚠️ Lütfen e-posta ve şifrenizi girin.")
 
     with tab_kayit:
         with st.form("kayit_form"):
@@ -684,3 +690,4 @@ with bottom:
             if st.button(btn_label, key=f"nav_{key}", use_container_width=True):
                 st.session_state.sayfa = key
                 st.rerun()
+
