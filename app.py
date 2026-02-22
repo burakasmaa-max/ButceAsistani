@@ -12,7 +12,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ─── SUPABASE BAĞLANTI ────────────────────────────────────────────
 @st.cache_resource
 def supabase_baglanti():
     url = st.secrets["SUPABASE_URL"]
@@ -21,7 +20,6 @@ def supabase_baglanti():
 
 supabase = supabase_baglanti()
 
-# ─── SESSION STATE ────────────────────────────────────────────────
 if "sayfa" not in st.session_state:
     st.session_state.sayfa = "anasayfa"
 if "user" not in st.session_state:
@@ -29,7 +27,6 @@ if "user" not in st.session_state:
 if "access_token" not in st.session_state:
     st.session_state.access_token = None
 
-# ─── CSS ──────────────────────────────────────────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
@@ -63,9 +60,6 @@ h3 { font-size: 0.95rem !important; color: #1A1F36 !important; font-weight: 700 
 .txn-name { font-size: 13px; font-weight: 700; color: #1A1F36; }
 .txn-date { font-size: 11px; color: #8A92A6; margin-top: 1px; }
 .txn-amount { font-size: 14px; font-weight: 800; color: #EE0979; }
-.login-card { background: white; border-radius: 24px; padding: 32px 24px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); margin-top: 20px; }
-.login-title { font-size: 1.6rem; font-weight: 900; color: #1A1F36; margin-bottom: 4px; }
-.login-sub { font-size: 14px; color: #8A92A6; font-weight: 600; margin-bottom: 24px; }
 div[data-testid="metric-container"] { background: white !important; border-radius: 16px !important; padding: 14px !important; box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important; border: none !important; }
 div[data-testid="metric-container"] label { font-size: 10px !important; color: #8A92A6 !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; }
 div[data-testid="metric-container"] div[data-testid="stMetricValue"] { font-size: 1.2rem !important; color: #1A1F36 !important; font-weight: 900 !important; }
@@ -89,25 +83,31 @@ hr { border-color: #E8ECF4 !important; margin: 16px 0 !important; }
 """, unsafe_allow_html=True)
 
 # ─── SABİTLER ─────────────────────────────────────────────────────
-KATEGORI_RENK = {
-    "Eğitim":                  {"bg": "linear-gradient(135deg,#4776E6,#8E54E9)", "icon": "📚"},
-    "Akaryakıt":               {"bg": "linear-gradient(135deg,#11998E,#38EF7D)", "icon": "⛽"},
-    "Fatura":                  {"bg": "linear-gradient(135deg,#F7971E,#FFD200)", "icon": "💡"},
-    "Market":                  {"bg": "linear-gradient(135deg,#FF6B6B,#EE0979)", "icon": "🛒"},
-    "Giyim":                   {"bg": "linear-gradient(135deg,#F953C6,#B91D73)", "icon": "👗"},
-    "Yemek":                   {"bg": "linear-gradient(135deg,#FF8008,#FFC837)", "icon": "🍽️"},
-    "Araç Bakım-Vergi":        {"bg": "linear-gradient(135deg,#2C3E50,#4CA1AF)", "icon": "🚗"},
-    "İlaç":                    {"bg": "linear-gradient(135deg,#1D976C,#93F9B9)", "icon": "💊"},
-    "Kredi Kartı Geçmiş Borç": {"bg": "linear-gradient(135deg,#C94B4B,#4B134F)", "icon": "💳"},
-}
+VARSAYILAN_KATEGORILER = [
+    "Eğitim","Akaryakıt","Fatura","Market","Giyim",
+    "Yemek","Araç Bakım-Vergi","İlaç","Kredi Kartı Geçmiş Borç"
+]
 
-KİŞİ_RENK = {
-    "Burak":  "#1A73E8",
-    "Kerime": "#E91E8C",
-    "Ece":    "#FF6B35",
-    "Berkay": "#11998E",
-    "Genel":  "#8E54E9",
-}
+VARSAYILAN_KİŞİLER = ["Genel"]
+
+KAT_GRADYANLAR = [
+    "linear-gradient(135deg,#4776E6,#8E54E9)",
+    "linear-gradient(135deg,#11998E,#38EF7D)",
+    "linear-gradient(135deg,#F7971E,#FFD200)",
+    "linear-gradient(135deg,#FF6B6B,#EE0979)",
+    "linear-gradient(135deg,#F953C6,#B91D73)",
+    "linear-gradient(135deg,#FF8008,#FFC837)",
+    "linear-gradient(135deg,#2C3E50,#4CA1AF)",
+    "linear-gradient(135deg,#1D976C,#93F9B9)",
+    "linear-gradient(135deg,#C94B4B,#4B134F)",
+    "linear-gradient(135deg,#667eea,#764ba2)",
+    "linear-gradient(135deg,#f093fb,#f5576c)",
+    "linear-gradient(135deg,#4facfe,#00f2fe)",
+]
+
+KAT_İKONLAR = ["📚","⛽","💡","🛒","👗","🍽️","🚗","💊","💳","💰","🎯","🏠","✈️","🎮","💻","👶","🐾","🎵"]
+
+KİŞİ_RENKLER = ["#1A73E8","#E91E8C","#FF6B35","#11998E","#8E54E9","#F7971E","#C94B4B","#4776E6"]
 
 CHART = dict(
     plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
@@ -115,7 +115,31 @@ CHART = dict(
     legend=dict(bgcolor='rgba(255,255,255,0.9)', bordercolor='#E8ECF4', borderwidth=1),
 )
 
+# ─── SUPABASE TABLO KURULUMU ──────────────────────────────────────
+def tablolari_kur():
+    # Bu fonksiyon ilk girişte Supabase'de profil tablosunu kontrol eder
+    pass
+
 # ─── VERİ FONKSİYONLARI ──────────────────────────────────────────
+def kisiler_yukle(user_id):
+    try:
+        res = supabase.table("kisiler").select("*").eq("user_id", user_id).execute()
+        kisiler = [r["ad"] for r in res.data] if res.data else []
+        if not kisiler:
+            return VARSAYILAN_KİŞİLER
+        return kisiler
+    except:
+        return VARSAYILAN_KİŞİLER
+
+def kategoriler_yukle(user_id):
+    try:
+        res = supabase.table("kategoriler").select("*").eq("user_id", user_id).order("ad").execute()
+        if res.data:
+            return res.data  # [{"ad":..., "ikon":..., "renk_index":...}]
+        return []
+    except:
+        return []
+
 def veri_yukle(user_id):
     try:
         g  = supabase.table("gelirler").select("*").eq("user_id", user_id).execute()
@@ -137,6 +161,16 @@ def df_hazirla(gelirler, giderler):
         df_gi['Ay-Yıl'] = df_gi['Ay'] + " " + df_gi['Yıl'].astype(str)
     return df_g, df_gi
 
+def kat_renk_ikon(kategoriler):
+    """Kategori listesinden renk/ikon sözlüğü oluştur"""
+    sonuc = {}
+    for i, kat in enumerate(kategoriler):
+        ad = kat["ad"]
+        ikon = kat.get("ikon", "💰")
+        renk_idx = kat.get("renk_index", i % len(KAT_GRADYANLAR))
+        sonuc[ad] = {"bg": KAT_GRADYANLAR[renk_idx % len(KAT_GRADYANLAR)], "icon": ikon}
+    return sonuc
+
 # ═══════════════════════════════════════════════════════
 # GİRİŞ / KAYIT SAYFASI
 # ═══════════════════════════════════════════════════════
@@ -153,28 +187,26 @@ if st.session_state.user is None:
 
     with tab_giris:
         with st.form("giris_form"):
-            email    = st.text_input("📧 E-posta")
-            sifre    = st.text_input("🔒 Şifre", type="password")
-            giris_btn = st.form_submit_button("Giriş Yap", use_container_width=True)
-            if giris_btn:
+            email = st.text_input("📧 E-posta")
+            sifre = st.text_input("🔒 Şifre", type="password")
+            if st.form_submit_button("Giriş Yap", use_container_width=True):
                 if email and sifre:
                     try:
                         res = supabase.auth.sign_in_with_password({"email": email, "password": sifre})
                         st.session_state.user = res.user
                         st.session_state.access_token = res.session.access_token
                         st.rerun()
-                    except Exception as e:
+                    except:
                         st.error("❌ E-posta veya şifre hatalı!")
                 else:
                     st.error("⚠️ Lütfen tüm alanları doldurun.")
 
     with tab_kayit:
         with st.form("kayit_form"):
-            yeni_email = st.text_input("📧 E-posta")
-            yeni_sifre = st.text_input("🔒 Şifre", type="password")
+            yeni_email  = st.text_input("📧 E-posta")
+            yeni_sifre  = st.text_input("🔒 Şifre", type="password")
             yeni_sifre2 = st.text_input("🔒 Şifre Tekrar", type="password")
-            kayit_btn = st.form_submit_button("Kayıt Ol", use_container_width=True)
-            if kayit_btn:
+            if st.form_submit_button("Kayıt Ol", use_container_width=True):
                 if yeni_email and yeni_sifre and yeni_sifre2:
                     if yeni_sifre != yeni_sifre2:
                         st.error("❌ Şifreler eşleşmiyor!")
@@ -182,8 +214,8 @@ if st.session_state.user is None:
                         st.error("❌ Şifre en az 6 karakter olmalı!")
                     else:
                         try:
-                            res = supabase.auth.sign_up({"email": yeni_email, "password": yeni_sifre})
-                            st.success("✅ Kayıt başarılı! Lütfen e-postanızı onaylayın, sonra giriş yapın.")
+                            supabase.auth.sign_up({"email": yeni_email, "password": yeni_sifre})
+                            st.success("✅ Kayıt başarılı! E-postanızı onaylayın, sonra giriş yapın.")
                         except Exception as e:
                             st.error(f"❌ Kayıt başarısız: {str(e)}")
                 else:
@@ -191,7 +223,12 @@ if st.session_state.user is None:
     st.stop()
 
 # ─── KULLANICI GİRİŞ YAPMIŞ ──────────────────────────────────────
-user_id = st.session_state.user.id
+user_id    = st.session_state.user.id
+kisiler    = kisiler_yukle(user_id)
+kategoriler = kategoriler_yukle(user_id)
+kat_sozluk = kat_renk_ikon(kategoriler)
+kat_adlari = [k["ad"] for k in kategoriler] if kategoriler else VARSAYILAN_KATEGORILER
+
 gelirler, giderler = veri_yukle(user_id)
 df_gelir, df_gider = df_hazirla(gelirler, giderler)
 
@@ -244,7 +281,7 @@ if sayfa == "anasayfa":
         st.markdown('<div class="section-title">📂 Kategoriler</div>', unsafe_allow_html=True)
         kat_ozet = df_gider.groupby('kategori')['tutar'].sum().to_dict()
         cards_html = '<div class="cat-grid">'
-        for kat, bilgi in KATEGORI_RENK.items():
+        for kat, bilgi in kat_sozluk.items():
             tutar = kat_ozet.get(kat, 0)
             if tutar > 0:
                 cards_html += f"""
@@ -261,9 +298,10 @@ if sayfa == "anasayfa":
         txn_html = ''
         for _, row in son.iterrows():
             kat = row.get('kategori', 'Genel')
-            bilgi = KATEGORI_RENK.get(kat, {"bg": "linear-gradient(135deg,#667eea,#764ba2)", "icon": "💸"})
+            bilgi = kat_sozluk.get(kat, {"bg": "linear-gradient(135deg,#667eea,#764ba2)", "icon": "💸"})
             kisi = row.get('kisi', '')
-            kisi_renk = KİŞİ_RENK.get(kisi, '#8A92A6')
+            kisi_idx = kisiler.index(kisi) if kisi in kisiler else 0
+            kisi_renk = KİŞİ_RENKLER[kisi_idx % len(KİŞİ_RENKLER)]
             txn_html += f"""
             <div class="txn-card">
                 <div class="txn-icon" style="background:{bilgi['bg']}">{bilgi['icon']}</div>
@@ -348,28 +386,33 @@ elif sayfa == "ekle":
     st.markdown("---")
 
     if tur == "💸 Gider":
-        with st.form("gider_form", clear_on_submit=True):
-            tutar    = st.number_input("💵 Tutar (₺)", min_value=0.0, step=50.0)
-            kisi     = st.selectbox("👤 Kişi", ["Burak","Kerime","Ece","Berkay","Genel"])
-            kategori = st.selectbox("📂 Kategori", list(KATEGORI_RENK.keys()))
-            aciklama = st.text_input("📝 Açıklama (isteğe bağlı)")
-            tarih    = st.date_input("📅 Tarih")
-            if st.form_submit_button("💾  Kaydet", use_container_width=True):
-                if tutar > 0:
-                    try:
-                        supabase.table("giderler").insert({
-                            "user_id": user_id,
-                            "tutar": tutar, "kisi": kisi, "kategori": kategori,
-                            "aciklama": aciklama or "Belirtilmedi",
-                            "tarih": tarih.strftime("%d.%m.%Y")
-                        }).execute()
-                        st.success("✅ Gider kaydedildi!")
-                        st.balloons()
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"❌ Kayıt hatası: {str(e)}")
-                else:
-                    st.error("⚠️ Geçerli bir tutar giriniz.")
+        if not kat_adlari:
+            st.warning("⚠️ Önce ⚙️ Ayarlar sayfasından kategori ekleyin.")
+        elif not kisiler:
+            st.warning("⚠️ Önce ⚙️ Ayarlar sayfasından kişi ekleyin.")
+        else:
+            with st.form("gider_form", clear_on_submit=True):
+                tutar    = st.number_input("💵 Tutar (₺)", min_value=0.0, step=50.0)
+                kisi     = st.selectbox("👤 Kişi", kisiler)
+                kategori = st.selectbox("📂 Kategori", kat_adlari)
+                aciklama = st.text_input("📝 Açıklama (isteğe bağlı)")
+                tarih    = st.date_input("📅 Tarih")
+                if st.form_submit_button("💾  Kaydet", use_container_width=True):
+                    if tutar > 0:
+                        try:
+                            supabase.table("giderler").insert({
+                                "user_id": user_id, "tutar": tutar, "kisi": kisi,
+                                "kategori": kategori,
+                                "aciklama": aciklama or "Belirtilmedi",
+                                "tarih": tarih.strftime("%d.%m.%Y")
+                            }).execute()
+                            st.success("✅ Gider kaydedildi!")
+                            st.balloons()
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"❌ Hata: {str(e)}")
+                    else:
+                        st.error("⚠️ Geçerli bir tutar giriniz.")
     else:
         with st.form("gelir_form", clear_on_submit=True):
             tutar    = st.number_input("💵 Tutar (₺)", min_value=0.0, step=100.0)
@@ -379,8 +422,7 @@ elif sayfa == "ekle":
                 if tutar > 0:
                     try:
                         supabase.table("gelirler").insert({
-                            "user_id": user_id,
-                            "tutar": tutar,
+                            "user_id": user_id, "tutar": tutar,
                             "aciklama": aciklama or "Belirtilmedi",
                             "tarih": tarih.strftime("%d.%m.%Y")
                         }).execute()
@@ -388,13 +430,12 @@ elif sayfa == "ekle":
                         st.balloons()
                         st.rerun()
                     except Exception as e:
-                        st.error(f"❌ Kayıt hatası: {str(e)}")
+                        st.error(f"❌ Hata: {str(e)}")
                 else:
                     st.error("⚠️ Geçerli bir tutar giriniz.")
 
 elif sayfa == "analiz":
     st.markdown("## 📈 Analiz")
-
     if df_gider.empty:
         st.warning("Analiz için önce gider verisi giriniz.")
     else:
@@ -408,8 +449,7 @@ elif sayfa == "analiz":
             fig.update_traces(marker_color='#1A73E8', marker_line_width=0,
                               text=[f"₺{v:,.0f}" for v in aylik['tutar']],
                               textposition='outside', textfont=dict(size=10, color='#1A1F36'))
-            fig.update_layout(**CHART, height=320, xaxis_tickangle=-45, font=dict(family='Nunito'),
-                              title_font=dict(size=13, color='#1A1F36'))
+            fig.update_layout(**CHART, height=320, xaxis_tickangle=-45, font=dict(family='Nunito'))
             fig.update_xaxes(gridcolor='#E8ECF4')
             fig.update_yaxes(gridcolor='#E8ECF4')
             st.plotly_chart(fig, use_container_width=True)
@@ -420,95 +460,173 @@ elif sayfa == "analiz":
             fig2 = px.pie(kat, values='tutar', names='kategori',
                           title="Kategori Dağılımı", hole=0.45,
                           color_discrete_sequence=pie_renkler)
-            fig2.update_traces(textfont=dict(size=11, family='Nunito'), pull=[0.03]*len(kat))
-            fig2.update_layout(**CHART, height=340, font=dict(family='Nunito'),
-                               title_font=dict(size=13, color='#1A1F36'))
+            fig2.update_traces(textfont=dict(size=11), pull=[0.03]*len(kat))
+            fig2.update_layout(**CHART, height=340, font=dict(family='Nunito'))
             st.plotly_chart(fig2, use_container_width=True)
 
-            fig3 = px.sunburst(df_gider, path=['kategori','kisi'], values='tutar',
-                               title="Kategori & Kişi Detayı",
-                               color_discrete_sequence=pie_renkler)
-            fig3.update_layout(**CHART, height=340, font=dict(family='Nunito'),
-                               title_font=dict(size=13, color='#1A1F36'))
-            st.plotly_chart(fig3, use_container_width=True)
+            if 'kisi' in df_gider.columns:
+                fig3 = px.sunburst(df_gider, path=['kategori','kisi'], values='tutar',
+                                   title="Kategori & Kişi Detayı",
+                                   color_discrete_sequence=pie_renkler)
+                fig3.update_layout(**CHART, height=340, font=dict(family='Nunito'))
+                st.plotly_chart(fig3, use_container_width=True)
 
         with tab3:
-            kisi = df_gider.groupby('kisi')['tutar'].sum().reset_index()
-            fig4 = px.bar(kisi.sort_values('tutar'), x='tutar', y='kisi',
-                          orientation='h', title="Kişi Bazlı Harcama",
-                          labels={'tutar':'₺','kisi':''},
-                          color='kisi', color_discrete_map=KİŞİ_RENK)
-            fig4.update_traces(marker_line_width=0,
-                               text=[f"₺{v:,.0f}" for v in kisi.sort_values('tutar')['tutar']],
-                               textposition='outside', textfont=dict(size=11, color='#1A1F36'))
-            fig4.update_layout(**CHART, height=300, showlegend=False, font=dict(family='Nunito'),
-                               title_font=dict(size=13, color='#1A1F36'))
-            fig4.update_xaxes(gridcolor='#E8ECF4')
-            st.plotly_chart(fig4, use_container_width=True)
+            if 'kisi' in df_gider.columns:
+                kisi_df = df_gider.groupby('kisi')['tutar'].sum().reset_index()
+                kisi_renk_map = {k: KİŞİ_RENKLER[i % len(KİŞİ_RENKLER)] for i, k in enumerate(kisiler)}
+                fig4 = px.bar(kisi_df.sort_values('tutar'), x='tutar', y='kisi',
+                              orientation='h', title="Kişi Bazlı Harcama",
+                              labels={'tutar':'₺','kisi':''},
+                              color='kisi', color_discrete_map=kisi_renk_map)
+                fig4.update_traces(marker_line_width=0,
+                                   text=[f"₺{v:,.0f}" for v in kisi_df.sort_values('tutar')['tutar']],
+                                   textposition='outside', textfont=dict(size=11, color='#1A1F36'))
+                fig4.update_layout(**CHART, height=300, showlegend=False, font=dict(family='Nunito'))
+                fig4.update_xaxes(gridcolor='#E8ECF4')
+                st.plotly_chart(fig4, use_container_width=True)
 
-            kisi_ay = df_gider.groupby(['Ay-Yıl','kisi','Yıl','Ay_No'])['tutar'].sum().reset_index()
-            kisi_ay = kisi_ay.sort_values(['Yıl','Ay_No'])
-            fig5 = px.line(kisi_ay, x='Ay-Yıl', y='tutar', color='kisi',
-                           markers=True, title="Aylık Kişi Trendi",
-                           labels={'tutar':'₺','Ay-Yıl':''},
-                           color_discrete_map=KİŞİ_RENK)
-            fig5.update_traces(line_width=2.5, marker_size=7)
-            fig5.update_layout(**CHART, height=320, xaxis_tickangle=-45, font=dict(family='Nunito'),
-                               title_font=dict(size=13, color='#1A1F36'))
-            fig5.update_xaxes(gridcolor='#E8ECF4')
-            fig5.update_yaxes(gridcolor='#E8ECF4')
-            st.plotly_chart(fig5, use_container_width=True)
+                kisi_ay = df_gider.groupby(['Ay-Yıl','kisi','Yıl','Ay_No'])['tutar'].sum().reset_index()
+                kisi_ay = kisi_ay.sort_values(['Yıl','Ay_No'])
+                fig5 = px.line(kisi_ay, x='Ay-Yıl', y='tutar', color='kisi',
+                               markers=True, title="Aylık Kişi Trendi",
+                               labels={'tutar':'₺','Ay-Yıl':''},
+                               color_discrete_map=kisi_renk_map)
+                fig5.update_traces(line_width=2.5, marker_size=7)
+                fig5.update_layout(**CHART, height=320, xaxis_tickangle=-45, font=dict(family='Nunito'))
+                fig5.update_xaxes(gridcolor='#E8ECF4')
+                fig5.update_yaxes(gridcolor='#E8ECF4')
+                st.plotly_chart(fig5, use_container_width=True)
 
-elif sayfa == "duzenle":
-    st.markdown("## ⚙️ Veri Yönetimi")
-    st.info("💡 Hücreye tıklayıp düzenleyin, satır seçip Delete ile silin.")
+elif sayfa == "ayarlar":
+    st.markdown("## ⚙️ Ayarlar")
+    tab1, tab2, tab3 = st.tabs(["👥 Kişiler", "📂 Kategoriler", "🗃️ Veriler"])
 
-    st.markdown("### 📉 Gider Kayıtları")
-    if not df_gider.empty:
-        gider_saf = df_gider[['id','tarih','kisi','kategori','aciklama','tutar']].copy()
-        edited_g = st.data_editor(gider_saf, num_rows="dynamic",
-                                  use_container_width=True, key="ed_gider",
-                                  disabled=["id"])
-        if st.button("💾  Giderleri Kaydet", type="primary", use_container_width=True):
-            try:
-                supabase.table("giderler").delete().eq("user_id", user_id).execute()
-                for _, row in edited_g.iterrows():
-                    supabase.table("giderler").insert({
-                        "user_id": user_id,
-                        "tutar": row['tutar'], "kisi": row['kisi'],
-                        "kategori": row['kategori'], "aciklama": row['aciklama'],
-                        "tarih": row['tarih']
-                    }).execute()
-                st.success("✅ Güncellendi!")
-                st.rerun()
-            except Exception as e:
-                st.error(f"❌ Hata: {str(e)}")
-    else:
-        st.write("Kayıt yok.")
+    # ── KİŞİLER ──
+    with tab1:
+        st.markdown("### Kişi Ekle")
+        with st.form("kisi_ekle_form", clear_on_submit=True):
+            yeni_kisi = st.text_input("👤 Kişi Adı")
+            if st.form_submit_button("➕ Ekle", use_container_width=True):
+                if yeni_kisi.strip():
+                    if yeni_kisi.strip() in kisiler:
+                        st.error("❌ Bu kişi zaten var!")
+                    else:
+                        try:
+                            supabase.table("kisiler").insert({
+                                "user_id": user_id, "ad": yeni_kisi.strip()
+                            }).execute()
+                            st.success(f"✅ '{yeni_kisi}' eklendi!")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"❌ Hata: {str(e)}")
+                else:
+                    st.error("⚠️ Kişi adı boş olamaz.")
 
-    st.markdown("---")
-    st.markdown("### 📈 Gelir Kayıtları")
-    if not df_gelir.empty:
-        gelir_saf = df_gelir[['id','tarih','aciklama','tutar']].copy()
-        edited_gelir = st.data_editor(gelir_saf, num_rows="dynamic",
-                                      use_container_width=True, key="ed_gelir",
-                                      disabled=["id"])
-        if st.button("💾  Gelirleri Kaydet", type="primary", use_container_width=True):
-            try:
-                supabase.table("gelirler").delete().eq("user_id", user_id).execute()
-                for _, row in edited_gelir.iterrows():
-                    supabase.table("gelirler").insert({
-                        "user_id": user_id,
-                        "tutar": row['tutar'],
-                        "aciklama": row['aciklama'],
-                        "tarih": row['tarih']
-                    }).execute()
-                st.success("✅ Güncellendi!")
-                st.rerun()
-            except Exception as e:
-                st.error(f"❌ Hata: {str(e)}")
-    else:
-        st.write("Kayıt yok.")
+        st.markdown("### Mevcut Kişiler")
+        if kisiler and kisiler != VARSAYILAN_KİŞİLER:
+            for kisi in kisiler:
+                c1, c2 = st.columns([4, 1])
+                with c1:
+                    idx = kisiler.index(kisi) % len(KİŞİ_RENKLER)
+                    st.markdown(f"<div style='padding:10px;background:white;border-radius:10px;margin-bottom:6px;font-weight:700;color:{KİŞİ_RENKLER[idx]}'>👤 {kisi}</div>", unsafe_allow_html=True)
+                with c2:
+                    if st.button("🗑️", key=f"kisi_sil_{kisi}"):
+                        try:
+                            supabase.table("kisiler").delete().eq("user_id", user_id).eq("ad", kisi).execute()
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"❌ {str(e)}")
+        else:
+            st.info("Henüz kişi eklenmedi.")
+
+    # ── KATEGORİLER ──
+    with tab2:
+        st.markdown("### Kategori Ekle")
+        with st.form("kat_ekle_form", clear_on_submit=True):
+            yeni_kat  = st.text_input("📂 Kategori Adı")
+            ikon_sec  = st.selectbox("İkon Seç", KAT_İKONLAR)
+            renk_sec  = st.selectbox("Renk Seç", 
+                options=list(range(len(KAT_GRADYANLAR))),
+                format_func=lambda i: f"Renk {i+1}")
+            if st.form_submit_button("➕ Ekle", use_container_width=True):
+                if yeni_kat.strip():
+                    if yeni_kat.strip() in kat_adlari:
+                        st.error("❌ Bu kategori zaten var!")
+                    else:
+                        try:
+                            supabase.table("kategoriler").insert({
+                                "user_id": user_id,
+                                "ad": yeni_kat.strip(),
+                                "ikon": ikon_sec,
+                                "renk_index": renk_sec
+                            }).execute()
+                            st.success(f"✅ '{yeni_kat}' kategorisi eklendi!")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"❌ Hata: {str(e)}")
+                else:
+                    st.error("⚠️ Kategori adı boş olamaz.")
+
+        st.markdown("### Mevcut Kategoriler")
+        if kategoriler:
+            for kat in kategoriler:
+                c1, c2 = st.columns([4, 1])
+                with c1:
+                    bg = KAT_GRADYANLAR[kat.get("renk_index", 0) % len(KAT_GRADYANLAR)]
+                    st.markdown(f"<div style='padding:10px;background:{bg};border-radius:10px;margin-bottom:6px;font-weight:700;color:white'>{kat['ikon']} {kat['ad']}</div>", unsafe_allow_html=True)
+                with c2:
+                    if st.button("🗑️", key=f"kat_sil_{kat['ad']}"):
+                        try:
+                            supabase.table("kategoriler").delete().eq("user_id", user_id).eq("ad", kat["ad"]).execute()
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"❌ {str(e)}")
+        else:
+            st.info("Henüz kategori eklenmedi.")
+
+    # ── VERİLER ──
+    with tab3:
+        st.markdown("### 📉 Gider Kayıtları")
+        if not df_gider.empty:
+            gider_saf = df_gider[['id','tarih','kisi','kategori','aciklama','tutar']].copy()
+            edited_g = st.data_editor(gider_saf, num_rows="dynamic",
+                                      use_container_width=True, key="ed_gider", disabled=["id"])
+            if st.button("💾  Giderleri Kaydet", type="primary", use_container_width=True):
+                try:
+                    supabase.table("giderler").delete().eq("user_id", user_id).execute()
+                    for _, row in edited_g.iterrows():
+                        supabase.table("giderler").insert({
+                            "user_id": user_id, "tutar": row['tutar'], "kisi": row['kisi'],
+                            "kategori": row['kategori'], "aciklama": row['aciklama'], "tarih": row['tarih']
+                        }).execute()
+                    st.success("✅ Güncellendi!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ {str(e)}")
+        else:
+            st.info("Kayıt yok.")
+
+        st.markdown("---")
+        st.markdown("### 📈 Gelir Kayıtları")
+        if not df_gelir.empty:
+            gelir_saf = df_gelir[['id','tarih','aciklama','tutar']].copy()
+            edited_gelir = st.data_editor(gelir_saf, num_rows="dynamic",
+                                          use_container_width=True, key="ed_gelir", disabled=["id"])
+            if st.button("💾  Gelirleri Kaydet", type="primary", use_container_width=True):
+                try:
+                    supabase.table("gelirler").delete().eq("user_id", user_id).execute()
+                    for _, row in edited_gelir.iterrows():
+                        supabase.table("gelirler").insert({
+                            "user_id": user_id, "tutar": row['tutar'],
+                            "aciklama": row['aciklama'], "tarih": row['tarih']
+                        }).execute()
+                    st.success("✅ Güncellendi!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ {str(e)}")
+        else:
+            st.info("Kayıt yok.")
 
 # ═══════════════════════════════════════════════════════
 # ALT NAVİGASYON
@@ -527,7 +645,7 @@ with bottom:
         ("ozet",     "📊", "Özet"),
         ("ekle",     "➕", "Ekle"),
         ("analiz",   "📈", "Analiz"),
-        ("duzenle",  "⚙️", "Düzenle"),
+        ("ayarlar",  "⚙️", "Ayarlar"),
     ]
     for col, (key, icon, label) in zip(nav_cols, nav_items):
         with col:
