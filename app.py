@@ -4,6 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from supabase import create_client
 from datetime import datetime
+import html  # XSS Güvenliği için eklendi
 
 st.set_page_config(
     page_title="Finansal Asistan",
@@ -115,11 +116,6 @@ CHART = dict(
     legend=dict(bgcolor='rgba(255,255,255,0.9)', bordercolor='#E8ECF4', borderwidth=1),
 )
 
-# ─── SUPABASE TABLO KURULUMU ──────────────────────────────────────
-def tablolari_kur():
-    # Bu fonksiyon ilk girişte Supabase'de profil tablosunu kontrol eder
-    pass
-
 # ─── VERİ FONKSİYONLARI ──────────────────────────────────────────
 @st.cache_data
 def kisiler_yukle(user_id):
@@ -137,7 +133,7 @@ def kategoriler_yukle(user_id):
     try:
         res = supabase.table("kategoriler").select("*").eq("user_id", user_id).order("ad").execute()
         if res.data:
-            return res.data  # [{"ad":..., "ikon":..., "renk_index":...}]
+            return res.data  
         return []
     except:
         return []
@@ -165,7 +161,6 @@ def df_hazirla(gelirler, giderler):
     return df_g, df_gi
 
 def kat_renk_ikon(kategoriler):
-    """Kategori listesinden renk/ikon sözlüğü oluştur"""
     sonuc = {}
     for i, kat in enumerate(kategoriler):
         ad = kat["ad"]
@@ -195,17 +190,12 @@ if st.session_state.user is None:
             if st.form_submit_button("Giriş Yap", use_container_width=True):
                 if email and sifre:
                     try:
-                        # Supabase'e giriş isteği atıyoruz
                         res = supabase.auth.sign_in_with_password({"email": email, "password": sifre})
-                        
-                        # Başarılı olursa session'a kaydedip sayfayı yeniliyoruz
                         st.session_state.user = res.user
                         st.session_state.access_token = res.session.access_token
                         st.success("✅ Giriş başarılı, yönlendiriliyorsunuz...")
                         st.rerun()
-                        
                     except Exception as e:
-                        # ARTIK SUPABASE'İN BİZE GÖNDERDİĞİ GERÇEK HATAYI GÖRECEĞİZ
                         st.error(f"❌ Giriş Hatası: {str(e)}")
                 else:
                     st.error("⚠️ Lütfen e-posta ve şifrenizi girin.")
@@ -224,7 +214,6 @@ if st.session_state.user is None:
                     else:
                         try:
                             res = supabase.auth.sign_up({"email": yeni_email, "password": yeni_sifre})
-                            
                             if res.session:
                                 st.session_state.user = res.user
                                 st.session_state.access_token = res.session.access_token
@@ -260,13 +249,16 @@ sayfa        = st.session_state.sayfa
 if sayfa == "anasayfa":
     col_title, col_cikis = st.columns([4, 1])
     with col_title:
-        st.markdown(f"<div style='font-size:12px;color:#8A92A6;font-weight:700;padding-top:12px'>👤 {st.session_state.user.email}</div>", unsafe_allow_html=True)
+        # XSS Koruması: E-posta adresi temizlenerek ekrana basılıyor
+        guvenli_email = html.escape(st.session_state.user.email)
+        st.markdown(f"<div style='font-size:12px;color:#8A92A6;font-weight:700;padding-top:12px'>👤 {guvenli_email}</div>", unsafe_allow_html=True)
+    
     with col_cikis:
         if st.button("Çıkış", key="cikis"):
             supabase.auth.sign_out()
             st.session_state.user = None
             st.session_state.access_token = None
-            st.cache_data.clear() # Çıkış yaparken önbelleği temizlemek iyi bir pratiktir
+            st.cache_data.clear()
             st.rerun()
 
     st.markdown(f"""
@@ -301,10 +293,12 @@ if sayfa == "anasayfa":
         for kat, bilgi in kat_sozluk.items():
             tutar = kat_ozet.get(kat, 0)
             if tutar > 0:
+                # XSS Koruması: Kategori adı temizleniyor
+                guvenli_kat = html.escape(kat)
                 cards_html += f"""
                 <div class="cat-card" style="background:{bilgi['bg']}">
                     <div class="cat-icon">{bilgi['icon']}</div>
-                    <div class="cat-label">{kat}</div>
+                    <div class="cat-label">{guvenli_kat}</div>
                     <div class="cat-amount">₺{tutar:,.0f}</div>
                 </div>"""
         cards_html += '</div>'
@@ -319,12 +313,17 @@ if sayfa == "anasayfa":
             kisi = row.get('kisi', '')
             kisi_idx = kisiler.index(kisi) if kisi in kisiler else 0
             kisi_renk = KİŞİ_RENKLER[kisi_idx % len(KİŞİ_RENKLER)]
+            
+            # XSS Koruması: Kategori ve Kişi adları temizleniyor
+            guvenli_kat = html.escape(kat)
+            guvenli_kisi = html.escape(kisi)
+            
             txn_html += f"""
             <div class="txn-card">
                 <div class="txn-icon" style="background:{bilgi['bg']}">{bilgi['icon']}</div>
                 <div class="txn-info">
-                    <div class="txn-name">{kat}</div>
-                    <div class="txn-date">{row.get('tarih','')} · <span style="color:{kisi_renk};font-weight:800">{kisi}</span></div>
+                    <div class="txn-name">{guvenli_kat}</div>
+                    <div class="txn-date">{row.get('tarih','')} · <span style="color:{kisi_renk};font-weight:800">{guvenli_kisi}</span></div>
                 </div>
                 <div class="txn-amount">-₺{row['tutar']:,.0f}</div>
             </div>"""
@@ -424,7 +423,7 @@ elif sayfa == "ekle":
                                 "tarih": tarih.strftime("%d.%m.%Y")
                             }).execute()
                             
-                            st.cache_data.clear() # Veri önbelleğini temizle
+                            st.cache_data.clear()
                             
                             st.success("✅ Gider kaydedildi!")
                             st.balloons()
@@ -447,7 +446,7 @@ elif sayfa == "ekle":
                             "tarih": tarih.strftime("%d.%m.%Y")
                         }).execute()
                         
-                        st.cache_data.clear() # Veri önbelleğini temizle
+                        st.cache_data.clear()
                         
                         st.success("✅ Gelir kaydedildi!")
                         st.balloons()
@@ -540,7 +539,7 @@ elif sayfa == "ayarlar":
                                 "user_id": user_id, "ad": yeni_kisi.strip()
                             }).execute()
                             
-                            st.cache_data.clear() # Veri önbelleğini temizle
+                            st.cache_data.clear()
                             
                             st.success(f"✅ '{yeni_kisi}' eklendi!")
                             st.rerun()
@@ -555,12 +554,14 @@ elif sayfa == "ayarlar":
                 c1, c2 = st.columns([4, 1])
                 with c1:
                     idx = kisiler.index(kisi) % len(KİŞİ_RENKLER)
-                    st.markdown(f"<div style='padding:10px;background:white;border-radius:10px;margin-bottom:6px;font-weight:700;color:{KİŞİ_RENKLER[idx]}'>👤 {kisi}</div>", unsafe_allow_html=True)
+                    # XSS Koruması: Kişi adı temizleniyor
+                    guvenli_kisi = html.escape(kisi)
+                    st.markdown(f"<div style='padding:10px;background:white;border-radius:10px;margin-bottom:6px;font-weight:700;color:{KİŞİ_RENKLER[idx]}'>👤 {guvenli_kisi}</div>", unsafe_allow_html=True)
                 with c2:
                     if st.button("🗑️", key=f"kisi_sil_{kisi}"):
                         try:
                             supabase.table("kisiler").delete().eq("user_id", user_id).eq("ad", kisi).execute()
-                            st.cache_data.clear() # Veri önbelleğini temizle
+                            st.cache_data.clear()
                             st.rerun()
                         except Exception as e:
                             st.error(f"❌ {str(e)}")
@@ -589,7 +590,7 @@ elif sayfa == "ayarlar":
                                 "renk_index": renk_sec
                             }).execute()
                             
-                            st.cache_data.clear() # Veri önbelleğini temizle
+                            st.cache_data.clear()
                             
                             st.success(f"✅ '{yeni_kat}' kategorisi eklendi!")
                             st.rerun()
@@ -604,12 +605,14 @@ elif sayfa == "ayarlar":
                 c1, c2 = st.columns([4, 1])
                 with c1:
                     bg = KAT_GRADYANLAR[kat.get("renk_index", 0) % len(KAT_GRADYANLAR)]
-                    st.markdown(f"<div style='padding:10px;background:{bg};border-radius:10px;margin-bottom:6px;font-weight:700;color:white'>{kat['ikon']} {kat['ad']}</div>", unsafe_allow_html=True)
+                    # XSS Koruması: Kategori adı temizleniyor
+                    guvenli_kat_ad = html.escape(kat['ad'])
+                    st.markdown(f"<div style='padding:10px;background:{bg};border-radius:10px;margin-bottom:6px;font-weight:700;color:white'>{kat['ikon']} {guvenli_kat_ad}</div>", unsafe_allow_html=True)
                 with c2:
                     if st.button("🗑️", key=f"kat_sil_{kat['ad']}"):
                         try:
                             supabase.table("kategoriler").delete().eq("user_id", user_id).eq("ad", kat["ad"]).execute()
-                            st.cache_data.clear() # Veri önbelleğini temizle
+                            st.cache_data.clear()
                             st.rerun()
                         except Exception as e:
                             st.error(f"❌ {str(e)}")
@@ -632,7 +635,7 @@ elif sayfa == "ayarlar":
                             "kategori": row['kategori'], "aciklama": row['aciklama'], "tarih": row['tarih']
                         }).execute()
                         
-                    st.cache_data.clear() # Veri önbelleğini temizle
+                    st.cache_data.clear()
                     
                     st.success("✅ Güncellendi!")
                     st.rerun()
@@ -656,7 +659,7 @@ elif sayfa == "ayarlar":
                             "aciklama": row['aciklama'], "tarih": row['tarih']
                         }).execute()
                         
-                    st.cache_data.clear() # Veri önbelleğini temizle
+                    st.cache_data.clear()
                     
                     st.success("✅ Güncellendi!")
                     st.rerun()
@@ -690,4 +693,3 @@ with bottom:
             if st.button(btn_label, key=f"nav_{key}", use_container_width=True):
                 st.session_state.sayfa = key
                 st.rerun()
-
