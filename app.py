@@ -121,6 +121,7 @@ def tablolari_kur():
     pass
 
 # ─── VERİ FONKSİYONLARI ──────────────────────────────────────────
+@st.cache_data
 def kisiler_yukle(user_id):
     try:
         res = supabase.table("kisiler").select("*").eq("user_id", user_id).execute()
@@ -131,6 +132,7 @@ def kisiler_yukle(user_id):
     except:
         return VARSAYILAN_KİŞİLER
 
+@st.cache_data
 def kategoriler_yukle(user_id):
     try:
         res = supabase.table("kategoriler").select("*").eq("user_id", user_id).order("ad").execute()
@@ -140,6 +142,7 @@ def kategoriler_yukle(user_id):
     except:
         return []
 
+@st.cache_data
 def veri_yukle(user_id):
     try:
         g  = supabase.table("gelirler").select("*").eq("user_id", user_id).execute()
@@ -214,8 +217,15 @@ if st.session_state.user is None:
                         st.error("❌ Şifre en az 6 karakter olmalı!")
                     else:
                         try:
-                            supabase.auth.sign_up({"email": yeni_email, "password": yeni_sifre})
-                            st.success("✅ Kayıt başarılı! E-postanızı onaylayın, sonra giriş yapın.")
+                            res = supabase.auth.sign_up({"email": yeni_email, "password": yeni_sifre})
+                            
+                            if res.session:
+                                st.session_state.user = res.user
+                                st.session_state.access_token = res.session.access_token
+                                st.success("✅ Kayıt başarılı! Hesabınıza yönlendiriliyorsunuz...")
+                                st.rerun()
+                            else:
+                                st.success("✅ Kayıt başarılı! Lütfen Giriş Yap sekmesinden sisteme girin.")
                         except Exception as e:
                             st.error(f"❌ Kayıt başarısız: {str(e)}")
                 else:
@@ -250,6 +260,7 @@ if sayfa == "anasayfa":
             supabase.auth.sign_out()
             st.session_state.user = None
             st.session_state.access_token = None
+            st.cache_data.clear() # Çıkış yaparken önbelleği temizlemek iyi bir pratiktir
             st.rerun()
 
     st.markdown(f"""
@@ -406,6 +417,9 @@ elif sayfa == "ekle":
                                 "aciklama": aciklama or "Belirtilmedi",
                                 "tarih": tarih.strftime("%d.%m.%Y")
                             }).execute()
+                            
+                            st.cache_data.clear() # Veri önbelleğini temizle
+                            
                             st.success("✅ Gider kaydedildi!")
                             st.balloons()
                             st.rerun()
@@ -426,6 +440,9 @@ elif sayfa == "ekle":
                             "aciklama": aciklama or "Belirtilmedi",
                             "tarih": tarih.strftime("%d.%m.%Y")
                         }).execute()
+                        
+                        st.cache_data.clear() # Veri önbelleğini temizle
+                        
                         st.success("✅ Gelir kaydedildi!")
                         st.balloons()
                         st.rerun()
@@ -516,6 +533,9 @@ elif sayfa == "ayarlar":
                             supabase.table("kisiler").insert({
                                 "user_id": user_id, "ad": yeni_kisi.strip()
                             }).execute()
+                            
+                            st.cache_data.clear() # Veri önbelleğini temizle
+                            
                             st.success(f"✅ '{yeni_kisi}' eklendi!")
                             st.rerun()
                         except Exception as e:
@@ -534,6 +554,7 @@ elif sayfa == "ayarlar":
                     if st.button("🗑️", key=f"kisi_sil_{kisi}"):
                         try:
                             supabase.table("kisiler").delete().eq("user_id", user_id).eq("ad", kisi).execute()
+                            st.cache_data.clear() # Veri önbelleğini temizle
                             st.rerun()
                         except Exception as e:
                             st.error(f"❌ {str(e)}")
@@ -561,6 +582,9 @@ elif sayfa == "ayarlar":
                                 "ikon": ikon_sec,
                                 "renk_index": renk_sec
                             }).execute()
+                            
+                            st.cache_data.clear() # Veri önbelleğini temizle
+                            
                             st.success(f"✅ '{yeni_kat}' kategorisi eklendi!")
                             st.rerun()
                         except Exception as e:
@@ -579,6 +603,7 @@ elif sayfa == "ayarlar":
                     if st.button("🗑️", key=f"kat_sil_{kat['ad']}"):
                         try:
                             supabase.table("kategoriler").delete().eq("user_id", user_id).eq("ad", kat["ad"]).execute()
+                            st.cache_data.clear() # Veri önbelleğini temizle
                             st.rerun()
                         except Exception as e:
                             st.error(f"❌ {str(e)}")
@@ -600,6 +625,9 @@ elif sayfa == "ayarlar":
                             "user_id": user_id, "tutar": row['tutar'], "kisi": row['kisi'],
                             "kategori": row['kategori'], "aciklama": row['aciklama'], "tarih": row['tarih']
                         }).execute()
+                        
+                    st.cache_data.clear() # Veri önbelleğini temizle
+                    
                     st.success("✅ Güncellendi!")
                     st.rerun()
                 except Exception as e:
@@ -621,6 +649,9 @@ elif sayfa == "ayarlar":
                             "user_id": user_id, "tutar": row['tutar'],
                             "aciklama": row['aciklama'], "tarih": row['tarih']
                         }).execute()
+                        
+                    st.cache_data.clear() # Veri önbelleğini temizle
+                    
                     st.success("✅ Güncellendi!")
                     st.rerun()
                 except Exception as e:
